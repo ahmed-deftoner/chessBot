@@ -1,5 +1,5 @@
 #include "chessBoard.h"
-/*
+  /*
 chessBoard::chessBoard(int whiteHomeParameter){
 	for(int i=0;i<=7;i++)
 	{
@@ -54,7 +54,7 @@ chessBoard::chessBoard(int whiteHomeParameter) {
 		board[blackHome - whiteMoveDirection][i] = -board[whiteHome + whiteMoveDirection][i];
 	}
 
-}
+} 
 
 int chessBoard::initBoardFromFile(std::string fileName) {
 
