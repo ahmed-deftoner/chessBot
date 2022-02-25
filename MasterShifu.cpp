@@ -96,11 +96,59 @@ MasterShifu::MasterShifu(Color playerColor):chessPlayer("Master Shifu",playerCol
 }
 
 void MasterShifu::decideMove(gameState* state, action* Move, int maxDepth) {
-
+	int depth = 0;
+	minimax(state, Move, maxDepth, depth, state->getPlayer(),state->Board, true, INT_MIN, INT_MAX);
 }
 
-int MasterShifu::evaluate(chessBoard Board) {
-	
+int MasterShifu::evaluate(chessBoard Board,Color playerColor) {
+	int total = 0;
+	for (int i = 0; i < 8; ++i) {
+		for (int j = 0; j < 8; ++j) {
+			int pieceVal = Board.board[i][j];
+			switch (pieceVal)
+			{
+			case 1:
+				if (playerColor == White) 
+					total += pieceVal * evaluationMetrics::pawnValsW[i][j];
+				else
+					total -= pieceVal * evaluationMetrics::pawnValsB[i][j];
+				continue;
+			case 2:
+				if (playerColor == White)
+					total += pieceVal * evaluationMetrics::knightValsW[i][j];
+				else
+					total -= pieceVal * evaluationMetrics::knightValsB[i][j];
+				continue;
+			case 3:
+				if (playerColor == White)
+					total += pieceVal * evaluationMetrics::bishopValsW[i][j];
+				else
+					total -= pieceVal * evaluationMetrics::bishopValsB[i][j];
+				continue;
+			case 4:
+				if (playerColor == White)
+					total += pieceVal * evaluationMetrics::rookValsW[i][j];
+				else
+					total -= pieceVal * evaluationMetrics::rookValsB[i][j];
+				continue;
+			case 5:
+				if (playerColor == White)
+					total += pieceVal * evaluationMetrics::queenValsW[i][j];
+				else
+					total -= pieceVal * evaluationMetrics::queenValsB[i][j];
+				continue;
+			case 6:
+				if (playerColor == White)
+					total += pieceVal * evaluationMetrics::kingValsW[i][j];
+				else
+					total -= pieceVal * evaluationMetrics::kingValsB[i][j];
+				continue;
+			default:
+				continue;
+			}
+		}
+	}
+	return total;
 }
 
 bool MasterShifu::checkMate(Color playerColor, gameState* state) {
@@ -113,6 +161,7 @@ int MasterShifu::minimax(
 	gameState* state, action* Move, int maxDepth,
 	int depth, 
 	Color playerColor,
+	chessBoard Board,
 	bool maximizingPlayer, int alpha,
 	int beta)
 {
@@ -126,7 +175,7 @@ int MasterShifu::minimax(
 	// Terminating condition. i.e
 	// leaf node is reached
 	if (depth == maxDepth)
-		return 5;
+		return evaluate(Board,playerColor);
 
 	if (maximizingPlayer)
 	{
@@ -136,10 +185,17 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
-
+			for (int i = 0; i < 8; ++i) {
+				for (int j = 0; j < 8; ++j) {
+					cout << state->Board.board[i][j] << " ";
+				}
+				cout << endl;
+			}
+			cout<<endl;
 			int val = minimax(state, Move, maxDepth,
 				depth + 1,
 				Black,
+				Board,
 				false, alpha, beta);
 			best = max(best, val);
 			alpha = max(alpha, best);
@@ -162,6 +218,7 @@ int MasterShifu::minimax(
 				state, Move, maxDepth,
 				depth + 1,
 				White,
+				Board,
 				true, alpha, beta);
 			best = min(best, val);
 			beta = min(beta, best);
