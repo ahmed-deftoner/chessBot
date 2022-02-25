@@ -96,8 +96,27 @@ MasterShifu::MasterShifu(Color playerColor):chessPlayer("Master Shifu",playerCol
 }
 
 void MasterShifu::decideMove(gameState* state, action* Move, int maxDepth) {
-	int depth = 0;
-	minimax(state, Move, maxDepth, depth, state->getPlayer(),state->Board, true, INT_MIN, INT_MAX);
+	int bestMove = INT_MIN;
+	action* bestMoveFound = Move;
+	gameState statecpy;
+	chessBoard board1;
+
+	for (int i = 0; i < 8; ++i)
+		for (int j = 0; j < 8; ++j)
+			statecpy.Board.board[i][j] = state->Board.board[i][j];
+
+	int x = 0;
+	for (int i = 0; i < state->Actions.getActionCount();++i) {
+
+		statecpy.Actions.getAction(i, Move);
+		int value = minimax(&statecpy, Move, 6, 0, state->getPlayer(), state->Board, true, INT_MIN, INT_MAX);
+		if (value >= bestMove) {
+			bestMove = value;
+			x = i;
+			bestMoveFound = Move;
+		}
+	}
+	state->Actions.getAction(x, bestMoveFound);
 }
 
 int MasterShifu::evaluate(chessBoard Board,Color playerColor) {
@@ -167,9 +186,9 @@ int MasterShifu::minimax(
 {
 	if (checkMate(playerColor, state) == true)
 		if (maximizingPlayer)
-			return evaluationMetrics::checkmateW;
-		else
 			return evaluationMetrics::checkmateB;
+		else
+			return evaluationMetrics::checkmateW;
 	if (state->Actions.getActionCount() == 0)
 		return 0;
 	// Terminating condition. i.e
@@ -185,13 +204,7 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
-			for (int i = 0; i < 8; ++i) {
-				for (int j = 0; j < 8; ++j) {
-					cout << state->Board.board[i][j] << " ";
-				}
-				cout << endl;
-			}
-			cout<<endl;
+			state->Actions.getAction(i, Move);
 			int val = minimax(state, Move, maxDepth,
 				depth + 1,
 				Black,
@@ -214,6 +227,7 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
+			state->Actions.getAction(i, Move);
 			int val = minimax(
 				state, Move, maxDepth,
 				depth + 1,

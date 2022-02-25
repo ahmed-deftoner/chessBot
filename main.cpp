@@ -1,5 +1,6 @@
 #include "actionList.h"
-#include <iostream>
+//#include <iostream>
+#include "MasterShifu.h"
 #include <iomanip>
 #include "chess.h"
 #include "autoPlayer.h"
@@ -19,16 +20,9 @@ int pawnVals[8][8] = {
 	{0, 0, 0, 0, 0, 0, 0, 0 } };	 */
 
 int main() {
-	/*for (int i = 0; i < 8; ++i) {
-		for (int j = 0; j < 8; ++j) {
-			cout << pawnVals[i][j] << " ";
-		}
-		cout << endl;
-	}		   */
-
 	chess Game;
 	Game.Players[0] = new humanPlayer("Human Player Name", White);
-	Game.Players[1] = new autoPlayer();
-	Game.playGame();  
+	Game.Players[1] = new MasterShifu(Black);
+	Game.playGame(); 
 	return 0;
 }
