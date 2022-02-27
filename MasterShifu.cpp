@@ -2,7 +2,7 @@
 
 namespace evaluationMetrics {
 	//  P - KN - B - R - Q - K
-	int weightsW[6] = { 4,7,9,10,20,6 };
+	const int pawn = 95, bishop = 330, knight = 320, rook = 500, queen = 900, king = 2000;
 	int checkmateW = -50;
 
 	int pawnValsW[8][8] = {
@@ -65,38 +65,20 @@ namespace evaluationMetrics {
 	{-30, -40, -40, -50, -50, -40, -40, -30},
 	{-30, -40, -40, -50, -50, -40, -40, -30 } };
 
-	int pawnValsB[8][8];
-	int knightValsB[8][8];
-	int bishopValsB[8][8];
-	int rookValsB[8][8];
-	int queenValsB[8][8];
-	int kingValsB[8][8];
-	int weightsB[6];
-	int checkmateB;
-
-	void generatorBlack() {
-		for (int i = 0; i < 8; ++i) {
-			for (int j = 0; j < 8; ++j) {
-				pawnValsB[i][j] = pawnValsW[i][j] * -1;
-				knightValsB[i][j] = knightValsW[i][j] * -1;
-				bishopValsB[i][j] = bishopValsW[i][j] * -1;
-				rookValsB[i][j] = rookValsW[i][j] * -1;
-				queenValsB[i][j] = queenValsW[i][j] * -1;
-				kingValsB[i][j] = kingValsW[i][j] * -1;
-			}
-		}
-		for (int i = 0; i < 6; ++i)
-			weightsB[i] = weightsW[i] * -1;
-		checkmateB = checkmateW * -1;
-	}
 }
 
 MasterShifu::MasterShifu(Color playerColor):chessPlayer("Master Shifu",playerColor) {
-	evaluationMetrics::generatorBlack();
 }
 
 void MasterShifu::decideMove(gameState* state, action* Move, int maxDepth) {
-	int bestMove = INT_MIN;
+	int bestMove = INT_MAX;
+	if (state->getPlayer() == White)
+		bestMove = INT_MIN;
+	Move->fromCol = 0;
+	Move->fromRow = 0; 
+	Move->toCol = 0;
+	Move->toRow = 0;
+	
 	action* bestMoveFound = Move;
 	gameState statecpy;
 	chessBoard board1;
@@ -107,10 +89,23 @@ void MasterShifu::decideMove(gameState* state, action* Move, int maxDepth) {
 
 	int x = 0;
 	for (int i = 0; i < state->Actions.getActionCount();++i) {
-
+		int r1 = Move->fromRow;
+		int c1 = Move->fromCol;
+		int r2 = Move->toRow;
+		int c2 = Move->toCol;
+		int b = statecpy.Board.board[r1][c1];
+		//cout << b;
+		int c = statecpy.Board.board[r2][c2];
 		statecpy.Actions.getAction(i, Move);
-		int value = minimax(&statecpy, Move, 6, 0, state->getPlayer(), state->Board, true, INT_MIN, INT_MAX);
-		if (value >= bestMove) {
+		int value = minimax(&statecpy, Move, 5, 0, state->getPlayer(), state->Board, true, INT_MIN, INT_MAX);
+		statecpy.Board.board[r1][c1] = b;
+		statecpy.Board.board[r2][c2] = c;
+		if (state->getPlayer()==White && value >= bestMove) {
+			bestMove = value;
+			x = i;
+			bestMoveFound = Move;
+		}
+		else if (state->getPlayer() == Black && value <= bestMove) {
 			bestMove = value;
 			x = i;
 			bestMoveFound = Move;
@@ -127,40 +122,52 @@ int MasterShifu::evaluate(chessBoard Board,Color playerColor) {
 			switch (pieceVal)
 			{
 			case 1:
-				if (playerColor == White) 
-					total += pieceVal * evaluationMetrics::pawnValsW[i][j];
-				else
-					total -= pieceVal * evaluationMetrics::pawnValsB[i][j];
+				total -= evaluationMetrics::pawnValsW[i][j];
+				total -= evaluationMetrics::pawn;
 				continue;
 			case 2:
-				if (playerColor == White)
-					total += pieceVal * evaluationMetrics::knightValsW[i][j];
-				else
-					total -= pieceVal * evaluationMetrics::knightValsB[i][j];
+				total -= evaluationMetrics::knightValsW[i][j];
+				total -= evaluationMetrics::knight;
 				continue;
 			case 3:
-				if (playerColor == White)
-					total += pieceVal * evaluationMetrics::bishopValsW[i][j];
-				else
-					total -= pieceVal * evaluationMetrics::bishopValsB[i][j];
+				total -= evaluationMetrics::bishopValsW[i][j];
+				total -= evaluationMetrics::bishop;
 				continue;
 			case 4:
-				if (playerColor == White)
-					total += pieceVal * evaluationMetrics::rookValsW[i][j];
-				else
-					total -= pieceVal * evaluationMetrics::rookValsB[i][j];
+				total -= evaluationMetrics::rookValsW[i][j];
+				total -= evaluationMetrics::rook;
 				continue;
 			case 5:
-				if (playerColor == White)
-					total += pieceVal * evaluationMetrics::queenValsW[i][j];
-				else
-					total -= pieceVal * evaluationMetrics::queenValsB[i][j];
+				total -= evaluationMetrics::queenValsW[i][j];
+				total -= evaluationMetrics::queen;
 				continue;
 			case 6:
-				if (playerColor == White)
-					total += pieceVal * evaluationMetrics::kingValsW[i][j];
-				else
-					total -= pieceVal * evaluationMetrics::kingValsB[i][j];
+				total -= evaluationMetrics::kingValsW[i][j];
+				total -= evaluationMetrics::king;
+				continue;
+			case -1:
+				total += evaluationMetrics::pawnValsW[7-i][7-j];
+				total += evaluationMetrics::pawn;
+				continue;
+			case -2:
+				total += evaluationMetrics::knightValsW[7 - i][7 - j];
+				total += evaluationMetrics::knight;
+				continue;
+			case -3:
+				total += evaluationMetrics::bishopValsW[7 - i][7 - j];
+				total += evaluationMetrics::bishop;
+				continue;
+			case -4:
+				total += evaluationMetrics::rookValsW[7 - i][7 - j];
+				total += evaluationMetrics::rook;
+				continue;
+			case -5:
+				total += evaluationMetrics::queenValsW[7 - i][7 - j];
+				total += evaluationMetrics::queen;
+				continue;
+			case -6:
+				total += evaluationMetrics::kingValsW[7 - i][7 - j];
+				total += evaluationMetrics::king;
 				continue;
 			default:
 				continue;
@@ -186,9 +193,9 @@ int MasterShifu::minimax(
 {
 	if (checkMate(playerColor, state) == true)
 		if (maximizingPlayer)
-			return evaluationMetrics::checkmateB;
-		else
 			return evaluationMetrics::checkmateW;
+		else
+			return -evaluationMetrics::checkmateW;
 	if (state->Actions.getActionCount() == 0)
 		return 0;
 	// Terminating condition. i.e
@@ -204,12 +211,21 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
+			int r1 = Move->fromRow;
+			int c1 = Move->fromCol;
+			int r2 = Move->toRow;
+			int c2 = Move->toCol;
+			int b = state->Board.board[r1][c1];
+			//cout << b;
+			int c = state->Board.board[r2][c2];
 			state->Actions.getAction(i, Move);
 			int val = minimax(state, Move, maxDepth,
 				depth + 1,
 				Black,
 				Board,
 				false, alpha, beta);
+			state->Board.board[r1][c1] = b;
+			state->Board.board[r2][c2] = c;
 			best = max(best, val);
 			alpha = max(alpha, best);
 
@@ -227,6 +243,13 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
+			int r1 = Move->fromRow;
+			int c1 = Move->fromCol;
+			int r2 = Move->toRow;
+			int c2 = Move->toCol;
+			int b = state->Board.board[r1][c1];
+			//cout << b;
+			int c = state->Board.board[r2][c2];
 			state->Actions.getAction(i, Move);
 			int val = minimax(
 				state, Move, maxDepth,
@@ -234,6 +257,8 @@ int MasterShifu::minimax(
 				White,
 				Board,
 				true, alpha, beta);
+			state->Board.board[r1][c1] = b;
+			state->Board.board[r2][c2] = c;
 			best = min(best, val);
 			beta = min(beta, best);
 

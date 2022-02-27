@@ -5,8 +5,8 @@
 
 chess::chess() {
 	G = new gameState();
-	Players[0] = new humanPlayer("White Player Name", White);
-	Players[1] = new humanPlayer("Black Player Name", Black);
+	Players[0] = new humanPlayer("Black Player Name", Black);
+	Players[1] = new humanPlayer("White Player Name", White);
 	Interface = new UI();
 	Interface->state = G;
 }
