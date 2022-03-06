@@ -89,29 +89,18 @@ void MasterShifu::decideMove(gameState* state, action* Move, int maxDepth) {
 
 	int x = 0;
 	for (int i = 0; i < state->Actions.getActionCount();++i) {
-		int r1 = Move->fromRow;
-		int c1 = Move->fromCol;
-		int r2 = Move->toRow;
-		int c2 = Move->toCol;
-		int b = statecpy.Board.board[r1][c1];
-		//cout << b;
-		int c = statecpy.Board.board[r2][c2];
 		statecpy.Actions.getAction(i, Move);
 		int value = minimax(&statecpy, Move, 5, 0, state->getPlayer(), state->Board, true, INT_MIN, INT_MAX);
-		statecpy.Board.board[r1][c1] = b;
-		statecpy.Board.board[r2][c2] = c;
 		if (state->getPlayer()==White && value >= bestMove) {
 			bestMove = value;
 			x = i;
-			bestMoveFound = Move;
 		}
 		else if (state->getPlayer() == Black && value <= bestMove) {
 			bestMove = value;
 			x = i;
-			bestMoveFound = Move;
 		}
 	}
-	state->Actions.getAction(x, bestMoveFound);
+	state->Actions.getAction(x, Move);
 }
 
 int MasterShifu::evaluate(chessBoard Board,Color playerColor) {
@@ -193,9 +182,9 @@ int MasterShifu::minimax(
 {
 	if (checkMate(playerColor, state) == true)
 		if (maximizingPlayer)
-			return evaluationMetrics::checkmateW;
-		else
 			return -evaluationMetrics::checkmateW;
+		else
+			return evaluationMetrics::checkmateW;
 	if (state->Actions.getActionCount() == 0)
 		return 0;
 	// Terminating condition. i.e
@@ -211,21 +200,12 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
-			int r1 = Move->fromRow;
-			int c1 = Move->fromCol;
-			int r2 = Move->toRow;
-			int c2 = Move->toCol;
-			int b = state->Board.board[r1][c1];
-			//cout << b;
-			int c = state->Board.board[r2][c2];
 			state->Actions.getAction(i, Move);
 			int val = minimax(state, Move, maxDepth,
 				depth + 1,
 				Black,
 				Board,
 				false, alpha, beta);
-			state->Board.board[r1][c1] = b;
-			state->Board.board[r2][c2] = c;
 			best = max(best, val);
 			alpha = max(alpha, best);
 
@@ -243,13 +223,6 @@ int MasterShifu::minimax(
 		// right children
 		for (int i = 0; i < state->Actions.getActionCount(); i++)
 		{
-			int r1 = Move->fromRow;
-			int c1 = Move->fromCol;
-			int r2 = Move->toRow;
-			int c2 = Move->toCol;
-			int b = state->Board.board[r1][c1];
-			//cout << b;
-			int c = state->Board.board[r2][c2];
 			state->Actions.getAction(i, Move);
 			int val = minimax(
 				state, Move, maxDepth,
@@ -257,8 +230,6 @@ int MasterShifu::minimax(
 				White,
 				Board,
 				true, alpha, beta);
-			state->Board.board[r1][c1] = b;
-			state->Board.board[r2][c2] = c;
 			best = min(best, val);
 			beta = min(beta, best);
 

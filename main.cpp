@@ -21,8 +21,8 @@ int pawnVals[8][8] = {
 
 int main() {
 	chess Game;
-	Game.Players[0] = new humanPlayer("Human Player Name", White);
-	Game.Players[1] = new autoPlayer();
+	Game.Players[0] = new humanPlayer("Human Player Name", Black);
+	Game.Players[1] = new MasterShifu(White);
 	Game.playGame(); 
 	return 0;
 }
